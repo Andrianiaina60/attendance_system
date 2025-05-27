@@ -20,24 +20,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-admin_setup.py
-# import django
-# import os
-
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'attendance_system.settings')  # Remplace par ton projet
-# django.setup()
-
-# from authentication.models import CustomUser
-# from django.contrib.auth import authenticate
-
-# email = 'ravintsoandraibeandrianiaina@gmail.com'
-# user = CustomUser.objects.get(email=email)
-
-# user.is_staff = True
-# user.is_superuser = True
-# user.is_active = True
-# user.set_password('admin')
-# user.save()
-
-# authenticated_user = authenticate(email=email, password='admin')
-# print("Authenticated user:", authenticated_user)

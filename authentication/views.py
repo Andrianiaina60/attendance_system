@@ -1,54 +1,51 @@
-# views.py
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import (
-    RegisterSerializer,
-    CustomUserSerializer,
-    CustomTokenObtainPairSerializer,
+    AuthRegisterSerializer,
+    MyTokenObtainPairSerializer,
+    AuthUserSerializer,
+    ChangeEmailSerializer,
     ChangePasswordSerializer,
-    UpdateEmailSerializer
 )
+from .models import Authentication
 
+# Endpoint création compte (admin uniquement)
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+    queryset = Authentication.objects.all()
+    serializer_class = AuthRegisterSerializer
+    permission_classes = [permissions.IsAdminUser]
 
-class UserListView(generics.ListAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+# Login + refresh
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+# Profil (employé authentifié)
+class ProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AuthUserSerializer
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+    def get_object(self):
+        return self.request.user
 
-class ChangePasswordView(APIView):
+# Changer email
+class ChangeEmailView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangeEmailSerializer
 
-    def put(self, request, *args, **kwargs):
-        user = request.user
-        serializer = ChangePasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            if not user.check_password(serializer.validated_data['old_password']):
-                return Response({"error": "Ancien mot de passe incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return self.request.user
 
-            user.set_password(serializer.validated_data['new_password'])
-            user.save()
-            return Response({"success": "Mot de passe mis à jour"}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UpdateEmailView(APIView):
+# Changer mot de passe
+class ChangePasswordView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
 
-    def put(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UpdateEmailSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": "Email mis à jour"}, status=status.HTTP_200_OK)
+    def get_object(self):
+        return self.request.user
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Mot de passe mis à jour avec succès."}, status=status.HTTP_200_OK)

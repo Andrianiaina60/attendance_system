@@ -1,11 +1,18 @@
-# urls.py
 from django.urls import path
-from .views import RegisterView, UserListView, CustomTokenObtainPairView, ChangePasswordView, UpdateEmailView
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import (
+    RegisterView,
+    MyTokenObtainPairView,
+    ProfileView,
+    ChangeEmailView,
+    ChangePasswordView,
+)
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('users/', UserListView.as_view(), name='user-list'),
-    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('update-email/', UpdateEmailView.as_view(), name='update-email'),
+    path('register/', RegisterView.as_view(), name='auth_register'),       # Création compte par admin uniquement
+    path('login/', MyTokenObtainPairView.as_view(), name='auth_login'),    # Login utilisateur
+    path('refresh/', TokenRefreshView.as_view(), name='auth_refresh'),     # Rafraîchir token
+    path('profile/', ProfileView.as_view(), name='auth_profile'),          # Voir profil
+    path('change-email/', ChangeEmailView.as_view(), name='auth_change_email'), # Modifier email
+    path('change-password/', ChangePasswordView.as_view(), name='auth_change_password'), # Modifier mot de passe
 ]
