@@ -1,61 +1,61 @@
+# serializers.py
 from rest_framework import serializers
-from django.contrib.auth.password_validation import validate_password
-from .models import Authentication
-from attendance.models import Employee
+from django.contrib.auth import authenticate
+from .models import Employee
 
-
-# Création compte (réservé admin)
-class AuthRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    idemployee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False, allow_null=True)
-
+class EmployeeSerializer(serializers.ModelSerializer):
+    
     class Meta:
-        model = Authentication
-        fields = ['email', 'password', 'role', 'status', 'idemployee']
+        model = Employee
+        fields = [
+            'id', 'employee_id', 'email', 'role', 'status', 'created_at', 'updated_at'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        
+        if email and password:
+            # Authentification par email
+            user = authenticate(username=email, password=password)
+            
+            if not user:
+                raise serializers.ValidationError('Email ou mot de passe incorrect.')
+            
+            if user.status != 'active':
+                raise serializers.ValidationError('Compte désactivé.')
+            
+            attrs['user'] = user
+            return attrs
+        else:
+            raise serializers.ValidationError('Email et mot de passe requis.')
+
+class EmployeeRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = Employee
+        fields = [
+            'employee_id', 'email', 'password', 'password_confirm', 'role'
+        ]
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError("Les mots de passe ne correspondent pas.")
+        attrs.pop('password_confirm')
+        return attrs
+    
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = Authentication(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
-
-# Sérialiseur pour login et token
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['role'] = user.role
-        return token
-
-# Profil utilisateur
-class AuthUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Authentication
-        fields = ['email', 'role', 'status', 'idemployee']
-
-# Changer email
-class ChangeEmailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Authentication
-        fields = ['email']
-
-# Changer mot de passe
-class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True, validators=[validate_password])
-
-    def validate_old_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError("Ancien mot de passe incorrect.")
-        return value
-
-    def save(self, **kwargs):
-        user = self.context['request'].user
-        user.set_password(self.validated_data['new_password'])
-        user.save()
-        return user
+        employee = Employee(**validated_data)
+        employee.set_password(password)
+        employee.save()
+        return employee

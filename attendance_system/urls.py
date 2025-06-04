@@ -30,10 +30,14 @@ urlpatterns = [
 
     # App APIs
     path('api/', include('attendance.urls')),           # Pointage et employés
-    path('api/adminsystem/', include('adminsystem.urls')),  # Gestion système administrateur
     path('api/leave/', include('leave.urls')),          # Gestion des congés
     path('api/auth/', include('authentication.urls')), # Include authentication URLs
 
     # Documentation Swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
+
+
+
+# ACTIVATE ENVIRONNEMENT:
+#     .\env310\Scripts\Activate.ps1

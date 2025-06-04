@@ -30,11 +30,11 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'drf_yasg',
 
     # Local apps
     'authentication',
-    'adminsystem',
     'leave',
     'attendance',
 ]
@@ -72,7 +72,7 @@ WSGI_APPLICATION = "attendance_system.wsgi.application"
 # Custom User Model
 # AUTH_USER_MODEL = 'authentication.User'
 # AUTH_USER_MODEL = 'authentication.CustomUser'
-AUTH_USER_MODEL = 'authentication.Authentication'
+AUTH_USER_MODEL = 'authentication.Employee'
 
 
 # Database Configuration
@@ -111,12 +111,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',  # pour login admin
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # Assurez-vous que cette ligne est présente
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # ou personnalisée
-    ]
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 
