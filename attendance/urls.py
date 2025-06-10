@@ -9,26 +9,25 @@ from .views import (
 )
 
 urlpatterns = [
-    # Enregistrement Employees avec reconnaissance faciale
+    # Enregistrement d'employé avec reconnaissance faciale
     path("register/", register_employee, name="register_employee"),
-    
-    # Vérification de présence
+   
+    # Vérification de présence par reconnaissance faciale
     path("verify/", verify_attendance, name="verify_attendance"),
-
+    
     # Endpoints employés
-    path("employees/", employee_list, name="employee_list"),              # GET all
-    path("employee/<int:pk>/", employee_detail, name="employee_detail"),   # GET, PUT, DELETE
-
+    path("employees/", employee_list, name="employee_list"),                    # GET - Liste tous les employés
+    path("employees/<int:pk>/", employee_detail, name="employee_detail"),       # GET, PUT, DELETE - Opérations sur un employé
+    
     # Endpoints départements
-    path("departments/", department_list_create, name="department_list_create"), # GET all
-    path("department/<int:pk>/", department_detail, name="department_detail"), # GET, PUT, DELETE
+    path("departments/", department_list_create, name="department_list_create"), # GET - Liste, POST - Création
+    path("departments/<int:pk>/", department_detail, name="department_detail"),   # GET, PUT, DELETE - Opérations sur un département
 ]
-
 
 # Enregistrement d'un employé : POST http://127.0.0.1:8000/api/register/
 # Vérification de présence : POST http://127.0.0.1:8000/api/verify/
 
-# env\Scripts\Activate
+# env310/Scripts/Activate
 # cd attendance_system 
 # python manage.py runserver
 
